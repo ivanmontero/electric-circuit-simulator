@@ -1,4 +1,7 @@
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.HashSet;
 
 import static org.junit.Assert.*;
 
@@ -43,6 +46,8 @@ public class CircuitTest {
 
         c.addWire(w21);
         assertTrue(c.loops.size() == 1);
+
+        assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 1);
     }
 
     @Test
@@ -70,6 +75,8 @@ public class CircuitTest {
 
         c.addWire(w21);
         assertTrue(c.loops.size() == 1);
+
+        assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 1);
     }
 
     @Test
@@ -126,6 +133,8 @@ public class CircuitTest {
 
         c.addWire(w2j2);
         assertTrue(c.loops.size() == 3);
+
+        assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 3);
     }
 
     @Test
@@ -182,5 +191,7 @@ public class CircuitTest {
 
         c.addWire(w2j2);
         assertTrue(c.loops.size() == 3);
+
+        assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 3);
     }
 }

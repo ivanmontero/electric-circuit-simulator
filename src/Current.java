@@ -15,13 +15,14 @@ public class Current {
         this.magnitude = 0;
     }
 
-    // Must be the NEXT wire in the sequence
+    // Must be the NEXT wire in the sequence, either in the beginning or end.
     public void addWire(Wire w) {
-        wires.add(w);
-        if (this.wires.size() == 1) {
+        if (this.wires.isEmpty()) {
+            wires.add(w);
             this.elements.add(w.a);
             this.elements.add(w.b);
-        } else if (this.wires.size() == 2) {
+        } else if (this.wires.size() == 1) {
+            wires.add(w);
             CircuitElement prev = elements.contains(w.a) ? w.a : w.b;
             if (!elements.get(1).equals(prev)) {
                 // Swap elements
@@ -29,7 +30,14 @@ public class Current {
             }
             elements.add(w.next(elements.get(elements.size() - 1)));
         } else {
-            elements.add(w.next(elements.get(elements.size()-1)));
+            CircuitElement next = w.next(elements.get(elements.size()-1));
+            if (next == null) {
+                wires.add(0, w);
+                elements.add(0, w.next(elements.get(0)));
+            } else {
+                wires.add(w);
+                elements.add(next);
+            }
         }
     }
 
@@ -41,6 +49,16 @@ public class Current {
      */
     public int getDirection(CircuitElement a, CircuitElement b) {
         return elements.indexOf(b) - elements.indexOf(a);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof Current && ((Current)other).ID == this.ID;
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * this.ID;
     }
 
     @Override

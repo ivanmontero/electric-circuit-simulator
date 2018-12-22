@@ -90,11 +90,11 @@ public class Circuit {
             }
             for (int i = 0; i < l.wires.size()-1; i++) {
                 Wire curr = l.wires.get(i);
+                CircuitElement ce = curr.getSharedEndpoint(prev);
                 if (wireToCurrent.containsKey(curr)) {
                     prev = curr;
                     continue;
                 }
-                CircuitElement ce = curr.getSharedEndpoint(prev);
                 if (ce.type.PINS == 2) {
                     // In this case, both have the same current
                     Current c = wireToCurrent.get(prev);
@@ -134,6 +134,22 @@ public class Circuit {
                     }
                 }
                 prev = curr;
+            }
+        }
+        // Quick sanity check: Make sure that all 2 pin elements have the
+        // same current
+        for (CircuitElement ce : elements) {
+            if (ce.type.PINS == 2 && ce.connections.size() == 2) {
+                Wire a = ce.connections.get(0);
+                Wire b = ce.connections.get(1);
+                if (wireToCurrent.containsKey(a) && wireToCurrent.containsKey(b)) {
+                    if (!wireToCurrent.get(a).equals(wireToCurrent.get(b))) {
+                        // Arbitrary choice: choose the first one
+                        wireToCurrent.put(b, wireToCurrent.get(a));
+                        wireToCurrent.get(a).addWire(b);
+                    }
+                }
+
             }
         }
         // Step through loops:
