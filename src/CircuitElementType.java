@@ -1,3 +1,10 @@
 public enum CircuitElementType {
-    JUNCTION, BATTERY, RESISTOR
+    JUNCTION(-1), BATTERY(2), RESISTOR(2);
+
+    // -1 if infinite number
+    final int PINS;
+
+    CircuitElementType(int pins) {
+        this.PINS = pins;
+    }
 }

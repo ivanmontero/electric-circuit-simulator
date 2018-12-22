@@ -24,6 +24,16 @@ public class Wire {
         return element == a || element == b;
     }
 
+    public CircuitElement getSharedEndpoint(Wire other) {
+        if (containsEndpoint(other.a)) {
+            return other.a;
+        } else if (containsEndpoint(other.b)) {
+            return other.b;
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public boolean equals(Object other) {
         return other instanceof Wire && ((Wire) other).ID == this.ID;

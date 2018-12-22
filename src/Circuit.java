@@ -4,7 +4,8 @@ public class Circuit {
     public Set<Wire> wires;
     public Set<CircuitElement> elements;
     public Set<Loop> loops;
-    public Map<Integer, Current> currents;
+    public Map<Wire, Current> wireToCurrent;
+    public Map<Wire, Integer> loopUsage;
 
     public Circuit() {
         this.wires = new HashSet<>();
@@ -22,78 +23,119 @@ public class Circuit {
         w.b.connections.add(w);
         w.a.connections.add(w);
 
-//        findLoops(w, null, w, new Loop());
         findLoops(w, new Loop.LoopBuilder());
+        findCurrents();
     }
 
     private void findLoops(Wire current, Loop.LoopBuilder path) {
-        if (path.addWire(current)) {
-            if (path.isComplete()) {
-                loops.add(path.build());
-                return;
-            } else {
-                for (Wire w : path.last().connections) {
-                    if (!w.equals(current)) {
-                        findLoops(w, path);
-                    }
+        if (path.isComplete(current)) {
+            path.wires.add(current);
+            loops.add(path.build());
+            path.wires.remove(path.wires.size() - 1);
+        } else if (path.addWire(current)) {
+            for (Wire w : path.last().connections) {
+                if (!w.equals(current)) {
+                    findLoops(w, path);
                 }
             }
             path.removeWire();
         }
+
     }
 
-
-    /*private void findLoops(Wire start, Wire prev, Wire current, Loop path) {
-        if (start.equals(current)) {
-            if (!path.hasWire(start)) {
-                // Very first one
-                path.wires.add(start);
-                path.elements.add(start.a);
-                path.elements.add(start.b);
-                for (Wire w : start.b.connections) {
-                    if (!w.equals(start)) {
-                        findLoops(start, current, w, path);
-                    }
-                }
-            } else {
-                // We found a loop!
-                loops.add(path.copy());
-            }
-        } else {
-            if (!path.wires.contains(current)) {
-                // Prev can either point b this one using the "a" or "b"
-                CircuitElement next;
-                if (current.containsEndpoint(prev.b)) {
-                    next = current.next(prev.b);
-                } else {
-                    next = current.next(prev.a);
-                }
-                if (path.elements.contains(next) && !start.a.equals(next)) {
-                    return;
-                }
-                path.wires.add(current);
-                path.elements.add(next);
-                for (Wire w : next.connections) {
-                    if (!w.equals(current)) {
-                        findLoops(start, current, w, path);
-                    }
-                }
-                path.elements.remove(next);
-                path.wires.remove(path.wires.size() - 1);
-            }
-        }
-
-    }*/
-
-    public void solve() {
-        currents = new HashMap<>();
-        int idCounter = 0;
+    public void findCurrents() {
+        wireToCurrent = new HashMap<>();
         Set<CircuitElement> junctions = new HashSet<>();
 
 //        for (Loop l : loops) {
+//            for (int i = 0; i < l.elements.size(); i++) {
+//                CircuitElement e = l.elements.get(i);
+//                if (e.type.PINS == 2 || e.connections.size() == 2) {
+//                    Wire a = e.connections.get(0);
+//                    Wire b = e.connections.get(1);
+//                    if (!wireToCurrent.containsKey(a) &&
+//                            !wireToCurrent.containsKey(b)) {
+//                        Current c = new Current();
+//                        c.addWire(a);
+//                        c.addWire(b);
+//                        wireToCurrent.put(a, c);
+//                        wireToCurrent.put(b, c);
+//                    } else if (!wireToCurrent.containsKey(a)) {
+//                        Current bc = wireToCurrent.get(b);
+//                        bc.addWire(a);
+//                        wireToCurrent.put(a, bc);
+//                    } else if (!wireToCurrent.containsKey(b)) {
+//                        Current ac = wireToCurrent.get(b);
+//                        ac.addWire(b);
+//                        wireToCurrent.put(b, ac);
+//                    }
+//                } else {
+//                    // multipin
+//                    // before the junction
+//                    Wire a = l.wires.get(l.loopCorrection(i-1));
+//                    Wire b = l.wires.get(i);
+//                    for (Wire w : e.connections) {
 //
+//                    }
+//                }
+//            }
 //        }
+        // Since the first wire in a loop HAS to have a current, we will
+        // add it to the list.
+        for (Loop l : loops) {
+            Wire prev = l.wires.get(l.elements.size() - 1);
+            if (!wireToCurrent.containsKey(prev)) {
+                wireToCurrent.put(prev, new Current());
+                wireToCurrent.get(prev).addWire(prev);
+            }
+            for (int i = 0; i < l.wires.size()-1; i++) {
+                Wire curr = l.wires.get(i);
+                if (wireToCurrent.containsKey(curr)) {
+                    prev = curr;
+                    continue;
+                }
+                CircuitElement ce = curr.getSharedEndpoint(prev);
+                if (ce.type.PINS == 2) {
+                    // In this case, both have the same current
+                    Current c = wireToCurrent.get(prev);
+                    c.addWire(curr);
+                    wireToCurrent.put(curr, c);
+                } else {
+                    // Assuming it can have any amount of pins
 
+                    // to determine if we treat it differently, we will see if
+                    // there any other valid branches (e.g., owned by a
+                    // different loop)
+                    if (loops.size() > 1) {
+                        for (Wire w : ce.connections) {
+                            if (!w.equals(prev) && !w.equals(curr)) {
+                                // check if any other loops own this wire
+                                for (Loop ol : loops) {
+                                    if (!l.equals(ol)) {
+                                        if (ol.hasWire(w)) {
+                                            Current c = new Current();
+                                            c.addWire(curr);
+                                            wireToCurrent.put(curr, c);
+                                            junctions.add(ce);
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (wireToCurrent.containsKey(curr)) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!wireToCurrent.containsKey(curr)) {
+                        Current c = wireToCurrent.get(prev);
+                        c.addWire(curr);
+                        wireToCurrent.put(curr, c);
+                    }
+                }
+                prev = curr;
+            }
+        }
         // Step through loops:
         // * if element connecting two wires is a an element
         //   with two pins. (e.g. resistor, battery, etc). If so, add both b same
