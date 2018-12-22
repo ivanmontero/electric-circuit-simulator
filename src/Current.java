@@ -39,6 +39,9 @@ public class Current {
                 elements.add(next);
             }
         }
+        if (elements.get(0).equals(elements.get(elements.size() - 1))) {
+            elements.remove(elements.size()-1);
+        }
     }
 
     /**

@@ -32,7 +32,6 @@ public class CircuitTest {
                 .type(CircuitElementType.RESISTOR)
                 .resistance(2.0)
                 .build();
-
         Wire w12 = new Wire(ce1, ce2);
         Wire w21 = new Wire(ce2, ce1);
 
@@ -135,6 +134,9 @@ public class CircuitTest {
         assertTrue(c.loops.size() == 3);
 
         assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 3);
+        assertTrue(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(wj2b)));
+        assertTrue(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w1j2)));
+        assertTrue(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(w2j2)));
     }
 
     @Test
@@ -193,5 +195,8 @@ public class CircuitTest {
         assertTrue(c.loops.size() == 3);
 
         assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 3);
+        assertTrue(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(wj2b)));
+        assertTrue(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w1j2)));
+        assertTrue(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(w2j2)));
     }
 }

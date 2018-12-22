@@ -25,15 +25,12 @@ public class Loop {
         return this.wireSet.contains(w);
     }
 
-    public int loopCorrection(int index) {
-        int size = wires.size();
-        if (index < 0) {
-            return loopCorrection(size - index);
-        } else if (index > size - 1) {
-            return loopCorrection(index - size);
-        } else {
-            return index;
-        }
+    public CircuitElement next(CircuitElement curr) {
+        return this.elements.get((this.elements.indexOf(curr) + 1) % this.elements.size());
+    }
+
+    public Wire next(Wire curr) {
+        return this.wires.get((this.wires.indexOf(curr) + 1) % this.wires.size());
     }
 
     @Override
@@ -133,7 +130,9 @@ public class Loop {
         }
 
         public Loop build() {
-            assert isComplete();
+            if (!isComplete()) {
+                throw new IllegalStateException("Loop must be complete.");
+            }
             return new Loop(this);
         }
 
