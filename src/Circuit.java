@@ -22,10 +22,28 @@ public class Circuit {
         w.b.connections.add(w);
         w.a.connections.add(w);
 
-        findLoops(w, null, w, new Loop());
+//        findLoops(w, null, w, new Loop());
+        findLoops(w, new Loop.LoopBuilder());
     }
 
-    private void findLoops(Wire start, Wire prev, Wire current, Loop path) {
+    private void findLoops(Wire current, Loop.LoopBuilder path) {
+        if (path.addWire(current)) {
+            if (path.isComplete()) {
+                loops.add(path.build());
+                return;
+            } else {
+                for (Wire w : path.last().connections) {
+                    if (!w.equals(current)) {
+                        findLoops(w, path);
+                    }
+                }
+            }
+            path.removeWire();
+        }
+    }
+
+
+    /*private void findLoops(Wire start, Wire prev, Wire current, Loop path) {
         if (start.equals(current)) {
             if (!path.hasWire(start)) {
                 // Very first one
@@ -65,7 +83,7 @@ public class Circuit {
             }
         }
 
-    }
+    }*/
 
     public void solve() {
         currents = new HashMap<>();
