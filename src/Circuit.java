@@ -1,11 +1,15 @@
 import java.util.*;
 
+// TODO: Allow removal of wires
+// TODO: Independent Equations
 public class Circuit {
     public Set<Wire> wires;
     public Set<CircuitElement> elements;
     public Set<Loop> loops;
-    public Map<Wire, Current> wireToCurrent;
-    public Set<Current> currents;
+    public Map<Wire, Branch> wireToBranch;
+    // Only holds "active" branches: one that possibly have a
+    // current.
+    public Set<Branch> branches;
     public Set<CircuitElement> junctions;
 
     public Circuit() {
@@ -53,29 +57,29 @@ public class Circuit {
         //   used in loops:
         //   - if only 2 of its ports are used (e.g., it acts as 2 pin), treat as
         //     two pin.
-        //   - if more than 2, we have different currents; create different currents
+        //   - if more than 2, we have different branches; create different branches
         //     for the branches, and store the junction for possible use with
         //     junction rule.
-        wireToCurrent = new HashMap<>();
+        wireToBranch = new HashMap<>();
         junctions = new HashSet<>();
-        currents = new HashSet<>();
+        branches = new HashSet<>();
         // Since the first wire in a loop HAS to have a current, we will
         // add it to the list.
         for (Loop l : loops) {
             Wire prev = l.wires.get(l.wires.size() - 1);
-            if (!wireToCurrent.containsKey(prev)) {
-                associateWireWithCurrent(prev, new Current());
+            if (!wireToBranch.containsKey(prev)) {
+                associateWireWithBranch(prev, new Branch());
             }
             for (int i = 0; i < l.wires.size()-1; i++) {
                 Wire curr = l.wires.get(i);
-                if (wireToCurrent.containsKey(curr)) {
+                if (wireToBranch.containsKey(curr)) {
                     prev = curr;
                     continue;
                 }
                 CircuitElement ce = curr.getSharedEndpoint(prev);
                 if (ce.type.PINS == 2) {
                     // In this case, both have the same current
-                    associateWireWithCurrent(curr, wireToCurrent.get(prev));
+                    associateWireWithBranch(curr, wireToBranch.get(prev));
                 } else {
                     // Assuming it can have any amount of pins
 
@@ -84,14 +88,14 @@ public class Circuit {
                     // different loop)
                     if (isMultiJunction(ce)) {
                         if (l.next(ce).type.PINS == 2 &&
-                                    wireToCurrent.containsKey(l.next(curr))) {
-                                associateWireWithCurrent(curr, wireToCurrent.get(l.next(curr)));
+                                    wireToBranch.containsKey(l.next(curr))) {
+                                associateWireWithBranch(curr, wireToBranch.get(l.next(curr)));
                             } else {
-                                associateWireWithCurrent(curr, new Current());
+                                associateWireWithBranch(curr, new Branch());
                             }
                             junctions.add(ce);
                     } else {
-                        associateWireWithCurrent(curr, wireToCurrent.get(prev));
+                        associateWireWithBranch(curr, wireToBranch.get(prev));
                     }
                 }
                 prev = curr;
@@ -124,12 +128,13 @@ public class Circuit {
         return false;
     }
 
-    private void associateWireWithCurrent(Wire w, Current c) {
-        wireToCurrent.put(w, c);
+    private void associateWireWithBranch(Wire w, Branch c) {
+        wireToBranch.put(w, c);
         c.addWire(w);
-        currents.add(c);
+        branches.add(c);
     }
 
+    // We know that, in given complete circuit,
     public void solve() {
 
     }

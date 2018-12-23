@@ -1,18 +1,18 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class Current {
+public class Branch {
     private static int currentIdCounter = 0;
     public final int ID;
     public List<Wire> wires;
     public List<CircuitElement> elements;
-    public int magnitude;
+    public double current;
 
-    public Current() {
+    public Branch() {
         this.ID = currentIdCounter++;
         this.wires = new ArrayList<>();
         this.elements = new ArrayList<>();
-        this.magnitude = 0;
+        this.current = 0;
     }
 
     // Must be the NEXT wire in the sequence, either in the beginning or end.
@@ -56,7 +56,7 @@ public class Current {
 
     @Override
     public boolean equals(Object other) {
-        return other instanceof Current && ((Current)other).ID == this.ID;
+        return other instanceof Branch && ((Branch)other).ID == this.ID;
     }
 
     @Override

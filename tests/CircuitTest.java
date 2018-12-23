@@ -1,10 +1,10 @@
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashSet;
 
 import static org.junit.Assert.*;
 
+// TODO: Factor out circuit elements to final variables.
 public class CircuitTest {
 
     @Test
@@ -63,8 +63,8 @@ public class CircuitTest {
          *
          */
         assertTrue(c.loops.isEmpty());
-        assertTrue(c.wireToCurrent.isEmpty());
-        assertTrue(c.currents.isEmpty());
+        assertTrue(c.wireToBranch.isEmpty());
+        assertTrue(c.branches.isEmpty());
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(w21);
@@ -76,10 +76,10 @@ public class CircuitTest {
          * +---+
          */
         assertTrue(c.loops.size() == 1);
-        assertTrue(c.wireToCurrent.size() == 2);
-        assertTrue(c.currents.size() == 1);
+        assertTrue(c.wireToBranch.size() == 2);
+        assertTrue(c.branches.size() == 1);
         assertTrue(c.junctions.isEmpty());
-        assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 1);
+        assertTrue(new HashSet<>(c.wireToBranch.values()).size() == 1);
     }
 
     /*
@@ -125,8 +125,8 @@ public class CircuitTest {
          *
          */
         assertTrue(c.loops.isEmpty());
-        assertTrue(c.wireToCurrent.isEmpty());
-        assertTrue(c.currents.isEmpty());
+        assertTrue(c.wireToBranch.isEmpty());
+        assertTrue(c.branches.isEmpty());
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(w21);
@@ -138,10 +138,10 @@ public class CircuitTest {
          * +---+
          */
         assertTrue(c.loops.size() == 1);
-        assertTrue(c.wireToCurrent.size() == 2);
-        assertTrue(c.currents.size() == 1);
+        assertTrue(c.wireToBranch.size() == 2);
+        assertTrue(c.branches.size() == 1);
         assertTrue(c.junctions.isEmpty());
-        assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 1);
+        assertTrue(new HashSet<>(c.wireToBranch.values()).size() == 1);
     }
 
     /*
@@ -204,8 +204,8 @@ public class CircuitTest {
          *     J
          */
         assertTrue(c.loops.isEmpty());
-        assertTrue(c.wireToCurrent.isEmpty());
-        assertTrue(c.currents.isEmpty());
+        assertTrue(c.wireToBranch.isEmpty());
+        assertTrue(c.branches.isEmpty());
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj11);
@@ -217,8 +217,8 @@ public class CircuitTest {
          *     J
          */
         assertTrue(c.loops.isEmpty());
-        assertTrue(c.wireToCurrent.isEmpty());
-        assertTrue(c.currents.isEmpty());
+        assertTrue(c.wireToBranch.isEmpty());
+        assertTrue(c.branches.isEmpty());
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(w1j2);
@@ -230,8 +230,8 @@ public class CircuitTest {
          *     J
          */
         assertTrue(c.loops.isEmpty());
-        assertTrue(c.wireToCurrent.isEmpty());
-        assertTrue(c.currents.isEmpty());
+        assertTrue(c.wireToBranch.isEmpty());
+        assertTrue(c.branches.isEmpty());
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj2b);
@@ -243,8 +243,8 @@ public class CircuitTest {
          * +---J
          */
         assertTrue(c.loops.size() == 1);
-        assertTrue(c.wireToCurrent.size() == 4);
-        assertTrue(c.currents.size() == 1);
+        assertTrue(c.wireToBranch.size() == 4);
+        assertTrue(c.branches.size() == 1);
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj12);
@@ -256,8 +256,8 @@ public class CircuitTest {
          * +---J
          */
         assertTrue(c.loops.size() == 1);
-        assertTrue(c.wireToCurrent.size() == 4);
-        assertTrue(c.currents.size() == 1);
+        assertTrue(c.wireToBranch.size() == 4);
+        assertTrue(c.branches.size() == 1);
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(w2j2);
@@ -269,18 +269,18 @@ public class CircuitTest {
          * +---J---+
          */
         assertTrue(c.loops.size() == 3);
-        assertTrue(c.wireToCurrent.size() == 6);
-        assertTrue(c.currents.size() == 3);
+        assertTrue(c.wireToBranch.size() == 6);
+        assertTrue(c.branches.size() == 3);
         assertTrue(c.junctions.size() == 2);
 
-        assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 3);
-        assertTrue(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(wj2b)));
-        assertTrue(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w1j2)));
-        assertTrue(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(w2j2)));
+        assertTrue(new HashSet<>(c.wireToBranch.values()).size() == 3);
+        assertTrue(c.wireToBranch.get(wbj1).equals(c.wireToBranch.get(wj2b)));
+        assertTrue(c.wireToBranch.get(wj11).equals(c.wireToBranch.get(w1j2)));
+        assertTrue(c.wireToBranch.get(wj12).equals(c.wireToBranch.get(w2j2)));
 
-        assertFalse(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(w1j2)));
-        assertFalse(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w2j2)));
-        assertFalse(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(wj2b)));
+        assertFalse(c.wireToBranch.get(wbj1).equals(c.wireToBranch.get(w1j2)));
+        assertFalse(c.wireToBranch.get(wj11).equals(c.wireToBranch.get(w2j2)));
+        assertFalse(c.wireToBranch.get(wj12).equals(c.wireToBranch.get(wj2b)));
     }
 
     /*
@@ -343,8 +343,8 @@ public class CircuitTest {
          *     J
          */
         assertTrue(c.loops.isEmpty());
-        assertTrue(c.wireToCurrent.isEmpty());
-        assertTrue(c.currents.isEmpty());
+        assertTrue(c.wireToBranch.isEmpty());
+        assertTrue(c.branches.isEmpty());
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj11);
@@ -356,8 +356,8 @@ public class CircuitTest {
          *     J
          */
         assertTrue(c.loops.isEmpty());
-        assertTrue(c.wireToCurrent.isEmpty());
-        assertTrue(c.currents.isEmpty());
+        assertTrue(c.wireToBranch.isEmpty());
+        assertTrue(c.branches.isEmpty());
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(w1j2);
@@ -369,8 +369,8 @@ public class CircuitTest {
          *     J
          */
         assertTrue(c.loops.isEmpty());
-        assertTrue(c.wireToCurrent.isEmpty());
-        assertTrue(c.currents.isEmpty());
+        assertTrue(c.wireToBranch.isEmpty());
+        assertTrue(c.branches.isEmpty());
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj2b);
@@ -382,8 +382,8 @@ public class CircuitTest {
          * +---J
          */
         assertTrue(c.loops.size() == 1);
-        assertTrue(c.wireToCurrent.size() == 4);
-        assertTrue(c.currents.size() == 1);
+        assertTrue(c.wireToBranch.size() == 4);
+        assertTrue(c.branches.size() == 1);
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj12);
@@ -395,8 +395,8 @@ public class CircuitTest {
          * +---J
          */
         assertTrue(c.loops.size() == 1);
-        assertTrue(c.wireToCurrent.size() == 4);
-        assertTrue(c.currents.size() == 1);
+        assertTrue(c.wireToBranch.size() == 4);
+        assertTrue(c.branches.size() == 1);
         assertTrue(c.junctions.isEmpty());
 
         c.addWire(w2j2);
@@ -408,17 +408,17 @@ public class CircuitTest {
          * +---J---+
          */
         assertTrue(c.loops.size() == 3);
-        assertTrue(c.wireToCurrent.size() == 6);
-        assertTrue(c.currents.size() == 3);
+        assertTrue(c.wireToBranch.size() == 6);
+        assertTrue(c.branches.size() == 3);
         assertTrue(c.junctions.size() == 2);
 
-        assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 3);
-        assertTrue(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(wj2b)));
-        assertTrue(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w1j2)));
-        assertTrue(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(w2j2)));
+        assertTrue(new HashSet<>(c.wireToBranch.values()).size() == 3);
+        assertTrue(c.wireToBranch.get(wbj1).equals(c.wireToBranch.get(wj2b)));
+        assertTrue(c.wireToBranch.get(wj11).equals(c.wireToBranch.get(w1j2)));
+        assertTrue(c.wireToBranch.get(wj12).equals(c.wireToBranch.get(w2j2)));
 
-        assertFalse(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(w1j2)));
-        assertFalse(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w2j2)));
-        assertFalse(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(wj2b)));
+        assertFalse(c.wireToBranch.get(wbj1).equals(c.wireToBranch.get(w1j2)));
+        assertFalse(c.wireToBranch.get(wj11).equals(c.wireToBranch.get(w2j2)));
+        assertFalse(c.wireToBranch.get(wj12).equals(c.wireToBranch.get(wj2b)));
     }
 }
