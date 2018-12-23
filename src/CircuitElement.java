@@ -67,6 +67,14 @@ public class CircuitElement {
         }
     }
 
+    // ONLY called when two wires are attached.
+    public void setDirection(Wire a, Wire b) {
+        assert connections.contains(a) && connections.contains(b);
+        if (!connections.get(0).equals(a)) {
+            connections.add(0, connections.remove(1));
+        }
+    }
+
     public String toString() {
         return ID + ":" + type;
     }
