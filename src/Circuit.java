@@ -62,7 +62,7 @@ public class Circuit {
         // Since the first wire in a loop HAS to have a current, we will
         // add it to the list.
         for (Loop l : loops) {
-            Wire prev = l.wires.get(l.elements.size() - 1);
+            Wire prev = l.wires.get(l.wires.size() - 1);
             if (!wireToCurrent.containsKey(prev)) {
                 associateWireWithCurrent(prev, new Current());
             }
@@ -82,38 +82,46 @@ public class Circuit {
                     // to determine if we treat it differently, we will see if
                     // there any other valid branches (e.g., owned by a
                     // different loop)
-                    if (loops.size() > 1) {
-                        for (Wire w : ce.connections) {
-                            if (!w.equals(prev) && !w.equals(curr)) {
-                                // check if any other loops own this wire
-                                for (Loop ol : loops) {
-                                    if (!l.equals(ol) && ol.hasWire(w)) {
-                                        // check if element after junction
-                                        // is one that has a 2 pin that is
-                                        // set
-                                        if (l.next(ce).type.PINS == 2 &&
-                                                wireToCurrent.containsKey(l.next(curr))) {
-                                            associateWireWithCurrent(curr, wireToCurrent.get(l.next(curr)));
-                                        } else {
-                                            associateWireWithCurrent(curr, new Current());
-                                        }
-                                        junctions.add(ce);
-                                        break;
-                                    }
-                                }
-                                if (wireToCurrent.containsKey(curr)) {
-                                    break;
-                                }
+                    if (isMultiJunction(ce)) {
+                        if (l.next(ce).type.PINS == 2 &&
+                                    wireToCurrent.containsKey(l.next(curr))) {
+                                associateWireWithCurrent(curr, wireToCurrent.get(l.next(curr)));
+                            } else {
+                                associateWireWithCurrent(curr, new Current());
                             }
-                        }
-                    }
-                    if (!wireToCurrent.containsKey(curr)) {
+                            junctions.add(ce);
+                    } else {
                         associateWireWithCurrent(curr, wireToCurrent.get(prev));
                     }
                 }
                 prev = curr;
             }
+            // Since we started with prev equal to the last wire, we skipped
+            // evaluating the very last circuit element. It is possible that
+            // this element is a multi junction.
+            CircuitElement last = l.elements.get(l.elements.size()-1);
+            if (last.type.PINS != 2 && isMultiJunction(last)) {
+                junctions.add(last);
+            }
         }
+    }
+
+    // All we need to do is find one wire that is contained in one
+    // loop but not the other.
+    private boolean isMultiJunction(CircuitElement ce) {
+        for (Wire w : ce.connections) {
+            for (Loop l : loops) {
+                for (Loop ol : loops) {
+                    if (!l.equals(ol)) {
+                        if ((l.hasWire(w) && !ol.hasWire(w))
+                                || (!l.hasWire(w) && ol.hasWire(w))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private void associateWireWithCurrent(Wire w, Current c) {

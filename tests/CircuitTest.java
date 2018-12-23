@@ -21,6 +21,13 @@ public class CircuitTest {
         assertTrue(c.elements.contains(ce));
     }
 
+    /*
+     * +---+
+     * |   |
+     * B   R
+     * |   |
+     * +---+
+     */
     @Test
     public void addWireLoopConsistencySimple() throws Exception {
         Circuit c = new Circuit();
@@ -35,20 +42,53 @@ public class CircuitTest {
         Wire w12 = new Wire(ce1, ce2);
         Wire w21 = new Wire(ce2, ce1);
 
-
         c.addCircuitElement(ce1);
         c.addCircuitElement(ce2);
+        /*
+         *
+         *
+         * B   R
+         *
+         *
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.elements.size() == 2);
 
         c.addWire(w12);
+        /*
+         * +---+
+         * |   |
+         * B   R
+         *
+         *
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.wireToCurrent.isEmpty());
+        assertTrue(c.currents.isEmpty());
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(w21);
+        /*
+         * +---+
+         * |   |
+         * B   R
+         * |   |
+         * +---+
+         */
         assertTrue(c.loops.size() == 1);
-
+        assertTrue(c.wireToCurrent.size() == 2);
+        assertTrue(c.currents.size() == 1);
+        assertTrue(c.junctions.isEmpty());
         assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 1);
     }
 
+    /*
+     * +---+
+     * |   |
+     * B   R
+     * |   |
+     * +---+
+     */
     @Test
     public void addWireLoopConsistencySimpleFlippedWires() throws Exception {
         Circuit c = new Circuit();
@@ -64,20 +104,53 @@ public class CircuitTest {
         Wire w12 = new Wire(ce1, ce2);
         Wire w21 = new Wire(ce1, ce2);
 
-
         c.addCircuitElement(ce1);
         c.addCircuitElement(ce2);
+        /*
+         *
+         *
+         * B   R
+         *
+         *
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.elements.size() == 2);
 
         c.addWire(w12);
+        /*
+         * +---+
+         * |   |
+         * B   R
+         *
+         *
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.wireToCurrent.isEmpty());
+        assertTrue(c.currents.isEmpty());
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(w21);
+        /*
+         * +---+
+         * |   |
+         * B   R
+         * |   |
+         * +---+
+         */
         assertTrue(c.loops.size() == 1);
-
+        assertTrue(c.wireToCurrent.size() == 2);
+        assertTrue(c.currents.size() == 1);
+        assertTrue(c.junctions.isEmpty());
         assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 1);
     }
 
+    /*
+     * +---J---+
+     * |   |   |
+     * B   R   R
+     * |   |   |
+     * +---J---+
+     */
     @Test
     public void addWireLoopConsistencyJunction() throws Exception {
         Circuit c = new Circuit();
@@ -112,33 +185,111 @@ public class CircuitTest {
         c.addCircuitElement(ce2);
         c.addCircuitElement(j1);
         c.addCircuitElement(j2);
+        /*
+         *     J
+         *
+         * B   R   R
+         *
+         *     J
+         */
         assertTrue(c.loops.isEmpty());
         assertTrue(c.elements.size() == 5);
 
         c.addWire(wbj1);
+        /*
+         * +---J
+         * |
+         * B   R   R
+         *
+         *     J
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.wireToCurrent.isEmpty());
+        assertTrue(c.currents.isEmpty());
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj11);
+        /*
+         * +---J
+         * |   |
+         * B   R   R
+         *
+         *     J
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.wireToCurrent.isEmpty());
+        assertTrue(c.currents.isEmpty());
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(w1j2);
+        /*
+         * +---J
+         * |   |
+         * B   R   R
+         *     |
+         *     J
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.wireToCurrent.isEmpty());
+        assertTrue(c.currents.isEmpty());
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj2b);
+        /*
+         * +---J
+         * |   |
+         * B   R   R
+         * |   |
+         * +---J
+         */
         assertTrue(c.loops.size() == 1);
+        assertTrue(c.wireToCurrent.size() == 4);
+        assertTrue(c.currents.size() == 1);
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj12);
+        /*
+         * +---J---+
+         * |   |   |
+         * B   R   R
+         * |   |
+         * +---J
+         */
         assertTrue(c.loops.size() == 1);
+        assertTrue(c.wireToCurrent.size() == 4);
+        assertTrue(c.currents.size() == 1);
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(w2j2);
+        /*
+         * +---J---+
+         * |   |   |
+         * B   R   R
+         * |   |   |
+         * +---J---+
+         */
         assertTrue(c.loops.size() == 3);
+        assertTrue(c.wireToCurrent.size() == 6);
+        assertTrue(c.currents.size() == 3);
+        assertTrue(c.junctions.size() == 2);
 
         assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 3);
         assertTrue(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(wj2b)));
         assertTrue(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w1j2)));
         assertTrue(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(w2j2)));
+
+        assertFalse(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(w1j2)));
+        assertFalse(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w2j2)));
+        assertFalse(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(wj2b)));
     }
 
+    /*
+     * +---J---+
+     * |   |   |
+     * B   R   R
+     * |   |   |
+     * +---J---+
+     */
     @Test
     public void addWireLoopConsistencyJunctionFlippedWires() throws Exception {
         Circuit c = new Circuit();
@@ -173,30 +324,101 @@ public class CircuitTest {
         c.addCircuitElement(ce2);
         c.addCircuitElement(j1);
         c.addCircuitElement(j2);
+        /*
+         *     J
+         *
+         * B   R   R
+         *
+         *     J
+         */
         assertTrue(c.loops.isEmpty());
         assertTrue(c.elements.size() == 5);
 
         c.addWire(wbj1);
+        /*
+         * +---J
+         * |
+         * B   R   R
+         *
+         *     J
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.wireToCurrent.isEmpty());
+        assertTrue(c.currents.isEmpty());
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj11);
+        /*
+         * +---J
+         * |   |
+         * B   R   R
+         *
+         *     J
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.wireToCurrent.isEmpty());
+        assertTrue(c.currents.isEmpty());
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(w1j2);
+        /*
+         * +---J
+         * |   |
+         * B   R   R
+         *     |
+         *     J
+         */
         assertTrue(c.loops.isEmpty());
+        assertTrue(c.wireToCurrent.isEmpty());
+        assertTrue(c.currents.isEmpty());
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj2b);
+        /*
+         * +---J
+         * |   |
+         * B   R   R
+         * |   |
+         * +---J
+         */
         assertTrue(c.loops.size() == 1);
+        assertTrue(c.wireToCurrent.size() == 4);
+        assertTrue(c.currents.size() == 1);
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(wj12);
+        /*
+         * +---J---+
+         * |   |   |
+         * B   R   R
+         * |   |
+         * +---J
+         */
         assertTrue(c.loops.size() == 1);
+        assertTrue(c.wireToCurrent.size() == 4);
+        assertTrue(c.currents.size() == 1);
+        assertTrue(c.junctions.isEmpty());
 
         c.addWire(w2j2);
+        /*
+         * +---J---+
+         * |   |   |
+         * B   R   R
+         * |   |   |
+         * +---J---+
+         */
         assertTrue(c.loops.size() == 3);
+        assertTrue(c.wireToCurrent.size() == 6);
+        assertTrue(c.currents.size() == 3);
+        assertTrue(c.junctions.size() == 2);
 
         assertTrue(new HashSet<>(c.wireToCurrent.values()).size() == 3);
         assertTrue(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(wj2b)));
         assertTrue(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w1j2)));
         assertTrue(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(w2j2)));
+
+        assertFalse(c.wireToCurrent.get(wbj1).equals(c.wireToCurrent.get(w1j2)));
+        assertFalse(c.wireToCurrent.get(wj11).equals(c.wireToCurrent.get(w2j2)));
+        assertFalse(c.wireToCurrent.get(wj12).equals(c.wireToCurrent.get(wj2b)));
     }
 }
