@@ -1,11 +1,20 @@
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashSet;
 
 import static org.junit.Assert.*;
 
-// TODO: Factor out circuit elements to final variables.
 public class CircuitTest {
+
+    public Circuit noJunction;
+    public Circuit twoJunction;
+
+
+    /* =================== Solve =================== */
+
+
+    /* =================== Add Circuit Element =================== */
 
     @Test
     public void addCircuitElementSimple() throws Exception {
@@ -20,6 +29,9 @@ public class CircuitTest {
         assertTrue(c.elements.size() == 1);
         assertTrue(c.elements.contains(ce));
     }
+
+
+    /* =================== Add Wire =================== */
 
     /*
      * +---+

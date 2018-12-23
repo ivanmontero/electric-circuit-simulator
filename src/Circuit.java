@@ -134,6 +134,9 @@ public class Circuit {
         branches.add(c);
     }
 
+    // Always evaluate before accessing current values / potential
+    // differences
+    //
     // We know that, in given complete circuit, the amount of unknowns
     // we have are the currents (voltages can be then derived from the
     // current), which equal to the number of active branches B. Let J
@@ -213,7 +216,95 @@ public class Circuit {
             }
         }
 
-        // TODO: Gaussian Elimination
+        // Run gauss elimination on the Kirchhoff equations
+        gaussianElimination(mat);
+
+        // Through back substitution, get the currents
+        double[] currents = backSubstitution(mat);
+
+        // Now, set the currents for the branches
+        for (int i = 0; i < bMappings.size(); i++) {
+            bMappings.get(i).current = currents[i];
+        }
+    }
+
+    // Assumes square matrix w/ additional last column as the
+    // equal side. Assumes there is a single answer, and that
+    // the rows are independent.
+    private void gaussianElimination(double[][] mat) {
+        int n = mat.length;
+        for (int k = 0; k < n; k++) {
+            // Step 1: find the kth pivot, which we will use the element
+            // the largest absolute value for computational stability.
+            int iMax = k;
+            double vMax = mat[iMax][k];
+            for (int i = k+1; i < n; i++) {
+                if(Math.abs(mat[i][k]) > vMax) {
+                    iMax = i;
+                    vMax = Math.abs(mat[i][k]);
+                }
+            }
+
+            // Swap the current row with the max row
+            if (iMax != k) {
+                swapRows(mat, k, iMax);
+            }
+
+            // Row elimination
+            for (int i = k+1; i < n; i++) {
+                // Factor f to set the kth element of the current
+                // row to zero.
+                double f = mat[i][k] / mat[k][k];
+
+                // Subtract the kth row element times f from the
+                // current row.
+                for (int j = k+1; j < n+1; j++) {
+                    mat[i][j] -= mat[k][j]*f;
+                }
+
+                // Fill lower triangular matrix with zero
+                // (To rid of floating point error)
+                mat[i][k] = 0.0;
+            }
+        }
+    }
+
+    // Assumes square matrix w/ additional last column as the
+    // equal side.
+    private void swapRows(double[][] mat, int r1, int r2) {
+        int n = mat.length;
+        for (int j = 0; j < n + 1; j++) {
+            double temp = mat[r1][j];
+            mat[r1][j] = mat[r2][j];
+            mat[r2][j] = temp;
+        }
+    }
+
+    // Assumes square matrix w/ additional last column as the
+    // equal side.
+    private double[] backSubstitution(double[][] mat) {
+        int n = mat.length;
+        double[] ans = new double[n];
+
+        // Start calculating from the last row to the first.
+        for (int i = n-1; i >= 0; i--) {
+            // Start with RHS
+            ans[i] = mat[i][n];
+
+            // To solve for the value of column i, we will
+            // use the previous values solved for on the
+            // LHS and subtract them from the RHS
+            // Since the matrix is upper triangular, we can
+            // start with j+1
+            for (int j = i+1; j < n; j++) {
+                ans[i] -= mat[i][j] * ans[j];
+            }
+
+            // Now, divide the RHS by the coefficient of the
+            // unknown being currently calculated.
+            ans[i] /= mat[i][i];
+        }
+        return ans;
     }
 
 //    // True if the potential difference is positive. MUST be a 2 pin element.
