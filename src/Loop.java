@@ -17,8 +17,8 @@ public class Loop {
                 new HashSet<>(this.elements));
     }
 
-    public boolean hasCircuitElement(CircuitElement e) {
-        return this.elementSet.contains(e);
+    public boolean hasCircuitElement(CircuitElement ce) {
+        return this.elementSet.contains(ce);
     }
 
     public boolean hasWire(Wire w) {
@@ -31,6 +31,34 @@ public class Loop {
 
     public Wire next(Wire curr) {
         return this.wires.get((this.wires.indexOf(curr) + 1) % this.wires.size());
+    }
+
+    // True if in same direction, false otherwise
+    public boolean getDirection(CircuitElement a, CircuitElement b) {
+        int ai = elements.indexOf(a);
+        int bi = elements.indexOf(b);
+        if ((ai == 0 && bi == elements.size()-1) || (ai == elements.size()-1 && bi == 0)) {
+            // in this case, an edge case, we reverse the result.
+            return ai-bi > 0;
+        } else {
+            return bi-ai > 0;
+        }
+    }
+
+    // True if in same direction, false otherwise
+    public boolean getDirection(Wire a, Wire b) {
+        int ai = wires.indexOf(a);
+        int bi = wires.indexOf(b);
+        if ((ai == 0 && bi == wires.size()-1) || (ai == wires.size()-1 && bi == 0)) {
+            // in this case, an edge case, we reverse the result.
+            return ai-bi > 0;
+        } else {
+            return bi-ai > 0;
+        }
+    }
+
+    public Wire getNextWire(CircuitElement ce) {
+        return wires.get(elements.indexOf(ce));
     }
 
     @Override

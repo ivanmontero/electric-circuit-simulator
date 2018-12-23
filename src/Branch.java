@@ -46,12 +46,15 @@ public class Branch {
 
     /**
      * Returns the direction this current points (for loop rule)
-     * positive if a -> b
-     * negative if a <- b
-     * zero if the two are the same.
+     * true if a -> b
+     * false if a <- b
      */
-    public int getDirection(CircuitElement a, CircuitElement b) {
-        return elements.indexOf(b) - elements.indexOf(a);
+    public boolean getDirection(CircuitElement a, CircuitElement b) {
+        return elements.indexOf(b) - elements.indexOf(a) > 0;
+    }
+
+    public boolean getDirection(Wire a, Wire b) {
+        return wires.indexOf(b) - wires.indexOf(a) > 0;
     }
 
     @Override

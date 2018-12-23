@@ -134,8 +134,90 @@ public class Circuit {
         branches.add(c);
     }
 
-    // We know that, in given complete circuit,
+    // We know that, in given complete circuit, the amount of unknowns
+    // we have are the currents (voltages can be then derived from the
+    // current), which equal to the number of active branches B. Let J
+    // equal to the amount of junctions. We will use Gaussian
+    // Elimination on the linear Kirchhoff equations to solve for
+    // these unknowns. We will need B independent equations, which we
+    // can obtain by using J-1 different junction equations and
+    // B-(J-1) different loop rule equations.
     public void solve() {
+        // Get independent equations
+        int b = branches.size(), j = junctions.size();
 
+        List<CircuitElement> iJunctions = new ArrayList<>();
+        ArrayList<Loop> iLoops = new ArrayList<>();
+        Iterator<CircuitElement> jIter = junctions.iterator();
+        while (j > 0 && iJunctions.size() < j-1) {
+            iJunctions.add(jIter.next());
+        }
+        Iterator<Loop> lIter = loops.iterator();
+        while (iLoops.size() + iJunctions.size() < branches.size()) {
+            iLoops.add(lIter.next());
+        }
+        assert branches.size() == iJunctions.size() + iLoops.size();
+
+        // Create augmented matrix to solve.
+        // Bx(B+1) matrix, last column is the "solution" part.
+        double[][] mat = new double[b][b+1];
+        // We will map branches (currents) to a specific index.
+        List<Branch> bMappings = new ArrayList<>();
+        Iterator<Branch> bIter = branches.iterator();
+        for (int i = 0; i < b; i++) {
+            bMappings.add(i, bIter.next());
+        }
+
+        // Populate the matrix
+
+        // Start with loop equations
+        for (int i = 0; i < iLoops.size(); i++) {
+            Loop l = iLoops.get(i);
+            for (CircuitElement ce : l.elements) {
+                if (ce.type.PINS != 2) {
+                    continue;
+                }
+                Branch br = wireToBranch.get(l.getNextWire(ce));
+                switch (ce.type) {
+                    case BATTERY:
+                        // Negative, since we are putting it on the other side
+                        // of the equality (the "equal" side)
+                        mat[i][b] +=
+                                -ce.potentialDifference
+                                        * ce.getPotentialDifferenceSign(l, br);
+                        break;
+                    case RESISTOR:
+                        mat[i][bMappings.indexOf(br)] +=
+                                ce.resistance * ce.getPotentialDifferenceSign(l, br);
+                    default:
+                        break;
+                }
+            }
+        }
+
+        // Add junction equations
+        for (int i = 0; i < iJunctions.size(); i++) {
+            CircuitElement ce = iJunctions.get(i);
+            // Find currents that are in and out.
+            for (Wire w : ce.connections) {
+                if (wireToBranch.containsKey(w)) {
+                    Branch br = wireToBranch.get(w);
+                    int row = iLoops.size() + i;
+                    if (br.getDirection(ce, w.next(ce))) {
+                        // If in same direction as going out from junction
+                        mat[row][bMappings.indexOf(br)] = -1;
+                    } else {
+                        mat[row][bMappings.indexOf(br)] = 1;
+                    }
+                }
+            }
+        }
+
+        // TODO: Gaussian Elimination
     }
+
+//    // True if the potential difference is positive. MUST be a 2 pin element.
+//    private boolean isPotentialDifferencePositive() {
+//
+//    }
 }

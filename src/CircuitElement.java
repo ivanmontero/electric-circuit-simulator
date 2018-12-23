@@ -48,6 +48,25 @@ public class CircuitElement {
         }
     }
 
+    /*
+    Must provide the branch and loop this element is contained in.
+    Only works for 2 pin elements.
+    -1 if negative, 1 if pos. 0 if none.
+     */
+    public int getPotentialDifferenceSign(Loop loop, Branch branch) {
+        Wire a = connections.get(0);
+        Wire b = connections.get(1);
+        switch(this.type) {
+            case BATTERY:
+                // Takes into account its own direction
+                return loop.getDirection(a, b) ? 1 : -1;
+            case RESISTOR:
+                return loop.getDirection(a, b) == branch.getDirection(a, b) ? -1 : 1;
+            default:
+                return 0;
+        }
+    }
+
     public String toString() {
         return ID + ":" + type;
     }
