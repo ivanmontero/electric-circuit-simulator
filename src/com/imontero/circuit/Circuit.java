@@ -3,37 +3,101 @@ package com.imontero.circuit;
 import java.util.*;
 
 // TODO: Allow removal of wires
-// TODO: Independent Equations
+
+/**
+ * A Circuit is a representation of an electric circuit composed of ideal wires and several electric
+ * components (resistors, junctions, etc.) that can compute the electric current through and
+ * potential difference across its elements.
+ */
 public class Circuit {
+    /** The wires contained in this circuit. */
     public Set<Wire> wires;
+    /** The elements contained in this circuit. */
     public Set<CircuitElement> elements;
+    /** The Kirchhoff loops contained in this circuit configuration. */
     public Set<Loop> loops;
+    /** The mapping from individual wires to the "Branch" they are contained in. */
     public Map<Wire, Branch> wireToBranch;
-    // Only holds "active" branches: one that possibly have a
-    // current.
+    /**
+     * The "active" branches contained in this circuit configuration. (e.g. The consecutive wires
+     * that will contain the same current. An "active" branch is one that can possibly have a
+     * current through it.
+     */
     public Set<Branch> branches;
+    /** The junctions in this circuit that contain more than two active wires */
     public Set<CircuitElement> junctions;
 
+    /**
+     * Instantiates a new, empty circuit.
+     */
     public Circuit() {
         this.wires = new HashSet<>();
         this.elements = new HashSet<>();
         this.loops = new HashSet<>();
     }
 
+    /**
+     * Adds a new circuit element to this.
+     *
+     * @param ce The circuit element to insert into the circuit.
+     */
     public void addCircuitElement(CircuitElement ce) {
         this.elements.add(ce);
     }
 
+    /**
+     * Adds the given wire to this.
+     *
+     * @requires Elements w.a and w.b exist in this.
+     * @param w The wire to insert into the circuit.
+     */
     public void addWire(Wire w) {
+        if (this.wires.contains(w)) {
+            return;
+        }
         this.wires.add(w);
 
         w.b.connections.add(w);
         w.a.connections.add(w);
 
+        // When a wire is added, it's possible that new loops were created in the circuit. We will
+        // search for all the loops created by this wire.
         findLoops(w, new Loop.LoopBuilder());
-        findCurrents();
+        // With the possibly found loops, we will find all the active branches in this new
+        // configuration.
+        findBranches();
     }
 
+    /**
+     * Removes the given wire from this.
+     *
+     * @param w The wire to remove from this circuit.
+     */
+    public void removeWire(Wire w) {
+        // TODO: Test
+        if (!this.wires.contains(w)) {
+            return;
+        }
+        this.wires.remove(w);
+
+        w.b.connections.remove(w);
+        w.a.connections.remove(w);
+
+        // When a wire is removed, it's possible that loops have been broken. We will remove all
+        // loops which depended on the removed wire.
+        this.loops.removeIf(loop -> loop.wires.contains(w));
+        // With the possibly removed loops, we will find all the active branches in this new
+        // configuration.
+        findBranches();
+    }
+
+    /**
+     * Helper method to find loops contained in the current circuit configuration. This method is
+     * recursive; it depends on previous calls to determine a loop's existence.
+     *
+     * @param current The current wire in consideration
+     * @param path The current path taken to the current wire.
+     */
     private void findLoops(Wire current, Loop.LoopBuilder path) {
         if (path.isComplete(current)) {
             path.wires.add(current);
@@ -50,7 +114,12 @@ public class Circuit {
 
     }
 
-    public void findCurrents() {
+    /**
+     * Helper method to find the active branches in the current circuit configuration.
+     *
+     * @requires all loops in the current configuration to have been found
+     */
+    private void findBranches() {
         // Step through loops:
         // * if element connecting two wires is a an element
         //   with two pins. (e.g. resistor, battery, etc). If so, add both b same
@@ -112,9 +181,29 @@ public class Circuit {
         }
     }
 
-    // All we need to do is find one wire that is contained in one
-    // loop but not the other.
+    /**
+     * Helper method to associate the given wire w with the branch c.
+     *
+     * @param w The wire to associate with a branch
+     * @param c The branch which the wire will be associated with.
+     * @requires the wire w is the next wire, whether preceding or succeeding, the branch's wires.
+     */
+    private void associateWireWithBranch(Wire w, Branch c) {
+        wireToBranch.put(w, c);
+        c.addWire(w);
+        branches.add(c);
+    }
+
+    /**
+     * Helper method to determine if the passed in junction is used by multiple active wires.
+     *
+     * @param ce The junction to evaluate
+     * @requires ce is a junction
+     * @return true iff this junction has multiple active wires.
+     */
     private boolean isMultiJunction(CircuitElement ce) {
+        // All we need to do is find one wire that is contained in one
+        // loop but not the other.
         for (Wire w : ce.connections) {
             for (Loop l : loops) {
                 for (Loop ol : loops) {
@@ -130,24 +219,25 @@ public class Circuit {
         return false;
     }
 
-    private void associateWireWithBranch(Wire w, Branch c) {
-        wireToBranch.put(w, c);
-        c.addWire(w);
-        branches.add(c);
-    }
-
-    // Always evaluate before accessing current values / potential
-    // differences
-    //
-    // We know that, in given complete circuit, the amount of unknowns
-    // we have are the currents (voltages can be then derived from the
-    // current), which equal to the number of active branches B. Let J
-    // equal to the amount of junctions. We will use Gaussian
-    // Elimination on the linear Kirchhoff equations to solve for
-    // these unknowns. We will need B independent equations, which we
-    // can obtain by using J-1 different junction equations and
-    // B-(J-1) different loop rule equations.
+    /**
+     * Evaluates the current circuit configuration and determines the electric current through
+     * each branch and element, which, then, potential difference can be determined from.
+     *
+     * @requires loops and branches of the current circuit configuration have been found.
+     */
     public void solve() {
+        // Always evaluate before accessing current values / potential
+        // differences
+        //
+        // We know that, in given complete circuit, the amount of unknowns
+        // we have are the currents (voltages can be then derived from the
+        // current), which equal to the number of active branches B. Let J
+        // equal to the amount of junctions. We will use Gaussian
+        // Elimination on the linear Kirchhoff equations to solve for
+        // these unknowns. We will need B independent equations, which we
+        // can obtain by using J-1 different junction equations and
+        // B-(J-1) different loop rule equations.
+
         // Get independent equations
         int b = branches.size(), j = junctions.size();
 
@@ -230,10 +320,15 @@ public class Circuit {
         }
     }
 
-    // Assumes square matrix w/ additional last column as the
-    // equal side. Assumes there is a single answer, and that
-    // the rows are independent.
+    /**
+     * Performs gaussian elimination on the given augmented matrix
+     *
+     * @param mat A square matrix with an extra column at the end representing the equality section.
+     */
     private void gaussianElimination(double[][] mat) {
+        // Assumes square matrix w/ additional last column as the
+        // equal side. Assumes there is a single answer, and that
+        // the rows are independent.
         int n = mat.length;
         for (int k = 0; k < n; k++) {
             // Step 1: find the kth pivot, which we will use the element
@@ -271,9 +366,16 @@ public class Circuit {
         }
     }
 
-    // Assumes square matrix w/ additional last column as the
-    // equal side.
+    /**
+     * A helper method to swap rows in the given augmented matrix.
+     *
+     * @param mat A square matrix with an extra column at the end representing the equality section.
+     * @param r1 The index of one of the rows to swap.
+     * @param r2 The index of the other row to swap.
+     */
     private void swapRows(double[][] mat, int r1, int r2) {
+        // Assumes square matrix w/ additional last column as the
+        // equal side.
         int n = mat.length;
         for (int j = 0; j < n + 1; j++) {
             double temp = mat[r1][j];
@@ -282,9 +384,16 @@ public class Circuit {
         }
     }
 
-    // Assumes square matrix w/ additional last column as the
-    // equal side.
+    /**
+     * Performs back substitution on the given matrix to obtain the solution to the matrix.
+     *
+     * @param mat The matrix to perform back substitution on.
+     * @requires Gaussian elimination already done on the given matrix.
+     * @return The solution to the augmented matrix.
+     */
     private double[] backSubstitution(double[][] mat) {
+        // Assumes square matrix w/ additional last column as the
+        // equal side.
         int n = mat.length;
         double[] ans = new double[n];
 
@@ -308,9 +417,4 @@ public class Circuit {
         }
         return ans;
     }
-
-//    // True if the potential difference is positive. MUST be a 2 pin element.
-//    private boolean isPotentialDifferencePositive() {
-//
-//    }
 }

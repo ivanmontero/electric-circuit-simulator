@@ -49,7 +49,6 @@ public class CircuitDisplay extends JPanel implements ActionListener {
     }
 
     public void update() {
-//        System.out.println(mousePressed);
         if (mousePressed) {
             if (batt.aSelected) {
                 batt.setNegativePinPosition(mousePosition);
