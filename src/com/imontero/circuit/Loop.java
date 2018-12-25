@@ -1,3 +1,5 @@
+package com.imontero.circuit;
+
 import java.util.*;
 
 public class Loop {
@@ -159,7 +161,7 @@ public class Loop {
 
         public Loop build() {
             if (!isComplete()) {
-                throw new IllegalStateException("Loop must be complete.");
+                throw new IllegalStateException("com.imontero.circuit.Loop must be complete.");
             }
             return new Loop(this);
         }

@@ -1,3 +1,9 @@
+package com.imontero.circuit;
+
+import com.imontero.circuit.CircuitElement;
+import com.imontero.circuit.CircuitElementType;
+import com.imontero.circuit.Loop;
+import com.imontero.circuit.Wire;
 import org.junit.Test;
 
 import java.util.List;

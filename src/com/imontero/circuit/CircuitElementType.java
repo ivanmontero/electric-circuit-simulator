@@ -1,3 +1,5 @@
+package com.imontero.circuit;
+
 public enum CircuitElementType {
     JUNCTION(-1), BATTERY(2), RESISTOR(2);
 

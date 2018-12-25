@@ -1,9 +1,9 @@
-# Electric Circuit Simulator
+# Electric com.imontero.circuit.Circuit Simulator
 
 A graphical application that utilizes Kirchhoff's laws to simulate and solve a given circuit in real time.
 
 ## Roadmap
- - [x] Wire and simple circuit element representation
+ - [x] com.imontero.circuit.Wire and simple circuit element representation
  - [x] Find loops in a given circuit configuration
  - [x] Determine branches a given circuit configuration
  - [x] Solve Kirchhoff's equations using Gaussian Elimination

@@ -1,3 +1,5 @@
+package com.imontero.circuit;
+
 import java.util.*;
 
 // TODO: Allow removal of wires

@@ -1,3 +1,5 @@
+package com.imontero.circuit;
+
 public class Wire {
     private static int wireIdCounter = 0;
     public final int ID;

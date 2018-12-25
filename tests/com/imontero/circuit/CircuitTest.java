@@ -1,3 +1,6 @@
+package com.imontero.circuit;
+
+import com.imontero.circuit.*;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -80,7 +83,7 @@ public class CircuitTest {
     }
 
 
-    /* =================== Add Circuit Element =================== */
+    /* =================== Add com.imontero.circuit.Circuit Element =================== */
 
     @Test
     public void addCircuitElementSimple() throws Exception {
@@ -97,7 +100,7 @@ public class CircuitTest {
     }
 
 
-    /* =================== Add Wire =================== */
+    /* =================== Add com.imontero.circuit.Wire =================== */
 
     @Test
     public void addWireLoopConsistencySimple() throws Exception {
@@ -208,13 +211,6 @@ public class CircuitTest {
         assertTrue(new HashSet<>(c.wireToBranch.values()).size() == 1);
     }
 
-    /*
-     * +---J---+
-     * |   |   |
-     * B   R   R
-     * |   |   |
-     * +---J---+
-     */
     @Test
     public void addWireLoopConsistencyJunction() throws Exception {
         Circuit c = new Circuit();
@@ -347,13 +343,6 @@ public class CircuitTest {
         assertFalse(c.wireToBranch.get(wj1r2).equals(c.wireToBranch.get(wj2b)));
     }
 
-    /*
-     * +---J---+
-     * |   |   |
-     * B   R   R
-     * |   |   |
-     * +---J---+
-     */
     @Test
     public void addWireLoopConsistencyJunctionFlippedWires() throws Exception {
         Circuit c = new Circuit();
