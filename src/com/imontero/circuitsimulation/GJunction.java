@@ -13,7 +13,7 @@ import java.util.List;
 public class GJunction {
     public static final int PIN_RADIUS = 5;
 
-    public List<GCircuitComponent> connections;
+    public List<GCircuitElement> connections;
     public List<Wire> connectionWires;
     // Set iff this pin is a junction (connected to by >2 wires)
     public CircuitElement junction;
@@ -31,35 +31,27 @@ public class GJunction {
         c.addCircuitElement(this.junction);
     }
 
-    public Wire addConnection(GCircuitComponent component) {
+    public Wire addConnection(GCircuitElement component, CircuitElement componentElement) {
         this.connections.add(component);
-        Wire w = new Wire(component.circuitElement,
+        Wire w = new Wire(componentElement,
                 this.junction);
+
+        // connect the wire by passing this element to
         this.junction.connections.add(w);
         this.connectionWires.add(w);
         c.addWire(w);
         return w;
     }
 
-    public void removeConnection(GCircuitComponent component) {
+    public void removeConnection(GCircuitElement component) {
         int index = connections.indexOf(component);
         connections.remove(index);
         c.removeWire(connectionWires.remove(index));
     }
 
-    public void processMovement(Point start, Point end) {
-
-    }
-
     public void draw(Graphics2D g, int alpha) {
         g.setColor(new Color(255,255,255, alpha));
-        if (connections.size() < 2) {
-            g.drawOval(position.x - PIN_RADIUS, position.y - PIN_RADIUS,
-                    2*PIN_RADIUS, 2*PIN_RADIUS);
-        } else {
-            g.fillOval(position.x - PIN_RADIUS, position.y - PIN_RADIUS,
-                    2*PIN_RADIUS, 2*PIN_RADIUS);
-        }
+        draw(g, position, connections.size() >= 2);
     }
 
 
@@ -67,9 +59,15 @@ public class GJunction {
         draw(g, 255);
     }
 
-    public static void draw(Graphics2D g, Point position) {
-        g.fillOval(position.x - PIN_RADIUS, position.y - PIN_RADIUS,
-                2*PIN_RADIUS, 2*PIN_RADIUS);
+    public static void draw(Graphics2D g, Vec position, boolean connected) {
+        if (connected) {
+            g.fillOval(position.x - PIN_RADIUS, position.y - PIN_RADIUS,
+                    2*PIN_RADIUS, 2*PIN_RADIUS);
+        } else {
+            g.drawOval(position.x - PIN_RADIUS, position.y - PIN_RADIUS,
+                    2*PIN_RADIUS, 2*PIN_RADIUS);
+        }
+
     }
 
 

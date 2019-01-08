@@ -9,74 +9,70 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
-public class GBattery extends GCircuitComponent {
-    public final int BATTERY_GAP = 6;
-    public final int BATTERY_POS_WIDTH = 50;
-    public final int BATTERY_NEG_WIDTH = 30;
+public class GBattery extends GCircuitElement {
+    public static final int BATTERY_GAP = 6;
+    public static final int BATTERY_POS_WIDTH = 50;
+    public static final int BATTERY_NEG_WIDTH = 30;
     public static final int MIN_BATTERY_PIN_LENGTH = 50;
-    public final int LINE_WIDTH = 2;
+    public static final int LINE_WIDTH = 2;
 
+    public Circuit c;
+    public CircuitElement battery;
     public Wire negativeWire;
     public Wire positiveWire;
     public GJunction negativeJunction;
     public GJunction positiveJunction;
 
     public GBattery(Circuit c, Vec negativePosition, Vec positivePosition, double voltage) {
-        super(c);
-        this.circuitElement = (new CircuitElement.CircuitElementBuilder())
+        super(CircuitElementType.BATTERY);
+        this.battery = (new CircuitElement.CircuitElementBuilder())
                 .type(CircuitElementType.BATTERY)
                 .potentialDifference(voltage)
                 .build();
-        c.addCircuitElement(this.circuitElement);
+        c.addCircuitElement(this.battery);
+        this.c = c;
         this.negativeJunction = new GJunction(c, negativePosition);
         this.positiveJunction = new GJunction(c, positivePosition);
-        this.negativeWire = this.negativeJunction.addConnection(this);
-        this.positiveWire = this.positiveJunction.addConnection(this);
-        this.circuitElement.setDirection(negativeWire, positiveWire);
+        this.negativeWire = this.negativeJunction.addConnection(this, battery);
+        this.positiveWire = this.positiveJunction.addConnection(this, battery);
     }
 
     public GBattery(Circuit c, GJunction negativeJunction, Vec positivePosition, double voltage) {
-        super(c);
-        this.circuitElement = (new CircuitElement.CircuitElementBuilder())
+        super(CircuitElementType.BATTERY);
+        this.battery = (new CircuitElement.CircuitElementBuilder())
                 .type(CircuitElementType.BATTERY)
                 .potentialDifference(voltage)
                 .build();
-        c.addCircuitElement(this.circuitElement);
+        c.addCircuitElement(this.battery);
+        this.c = c;
+        this.negativeJunction = negativeJunction;
         this.positiveJunction = new GJunction(c, positivePosition);
-        this.negativeWire = this.negativeJunction.addConnection(this);
-        this.positiveWire = this.positiveJunction.addConnection(this);
+        this.negativeWire = this.negativeJunction.addConnection(this, battery);
+        this.positiveWire = this.positiveJunction.addConnection(this, battery);
     }
-
     public void setPotentialDifference(double voltage) {
-        this.circuitElement.potentialDifference = voltage;
+        this.battery.potentialDifference = voltage;
     }
 
-    @Override
-    public void connect(GJunction other) {
+//    public void connect(GJunction other) {
+//
+//    }
+//
+//    public void disconnect(GJunction other) {
+//
+//    }
 
-    }
-
-    @Override
-    public void disconnect(GJunction other) {
-
-    }
-
-    @Override
     public void setPosition(Vec p) {
         Vec delta = p.sub(getPosition());
         negativeJunction.position = negativeJunction.position.add(delta);
         positiveJunction.position = positiveJunction.position.add(delta);
-
-
         // Check if new connections were made
     }
 
-    @Override
     public Vec getPosition() {
         return negativeJunction.position.mid(positiveJunction.position);
     }
 
-    @Override
     public boolean contains(Vec p) {
         Vec nPos = negativeJunction.position;
         Vec pPos = positiveJunction.position;
@@ -94,14 +90,21 @@ public class GBattery extends GCircuitComponent {
     }
 
     @Override
+    public boolean containsJunction(Vec p) {
+        return positiveJunction.contains(p) || negativeJunction.contains(p);
+    }
+
     public void draw(Graphics2D g) {
         draw(g, 255);
     }
 
-    @Override
     public void draw(Graphics2D g, int alpha) {
-        Vec nPos = negativeJunction.position;
-        Vec pPos = positiveJunction.position;
+        g.setColor(new Color(255,255,255, alpha));
+        draw(g, negativeJunction.position, positiveJunction.position, false);
+
+    }
+
+    public static void draw(Graphics2D g, Vec nPos, Vec pPos, boolean junctions) {
         double rad = Math.atan2(pPos.y - nPos.y, pPos.x - nPos.x) + Math.PI /2;
 //        Point mid = new Point((aPin.x + bPin.x) / 2, (aPin.y+bPin.y) / 2);
         Vec mid = pPos.mid(nPos);
@@ -111,7 +114,6 @@ public class GBattery extends GCircuitComponent {
         g.rotate(rad);
 //            g.setColor(Color.WHITE);
 //        int color = (int)(255*.7+.3*255*Math.sin(elapsedTime/16*.1));
-        g.setColor(new Color(255,255,255, alpha));
         int dist = (int) pPos.dist(nPos);
         g.drawLine(0, BATTERY_GAP / 2, 0, dist/2 - GJunction.PIN_RADIUS);
         g.drawLine(-BATTERY_NEG_WIDTH/2, BATTERY_GAP / 2,
@@ -120,9 +122,12 @@ public class GBattery extends GCircuitComponent {
                 BATTERY_POS_WIDTH / 2, -BATTERY_GAP / 2);
         g.drawLine(0, -BATTERY_GAP / 2, 0, -dist/2 + GJunction.PIN_RADIUS);
         g.setTransform(old);
+        if (junctions) {
+            GJunction.draw(g, nPos, false);
+            GJunction.draw(g, pPos, false);
+        }
     }
 
-    @Override
     public GJunction getJunction(Vec p) {
         if (negativeJunction.contains(p)) {
             return negativeJunction;
