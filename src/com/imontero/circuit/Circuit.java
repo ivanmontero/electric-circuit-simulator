@@ -69,6 +69,20 @@ public class Circuit {
     }
 
     /**
+     * Removes the given CircuitElement and all connected wires from this.
+     *
+     * @param ce The CircuitElement to remove from this circuit.
+     */
+    public void removeCircuitElement(CircuitElement ce) {
+        this.elements.remove(ce);
+
+        this.wires.removeIf(wire -> wire.containsEndpoint(ce));
+        this.loops.removeIf(loop -> loop.elements.contains(ce));
+
+        findBranches();
+    }
+
+    /**
      * Removes the given wire from this.
      *
      * @param w The wire to remove from this circuit.
