@@ -20,6 +20,7 @@ public class CircuitDisplay extends JPanel implements ActionListener {
     private boolean mousePressed = false;
     private boolean selectionMode = false;
     private CircuitElementType elementType = CircuitElementType.BATTERY;
+    // change to make it compatible with wires ^
     private Vec mousePosition = Vec.of(0, 0);
     private int elapsedTime = 0;
 
@@ -82,7 +83,7 @@ public class CircuitDisplay extends JPanel implements ActionListener {
             if (gcc == selected) {
                 gcc.draw(g, alpha);
             } else {
-                gcc.draw(g);
+                gcc.draw(g, 255);
             }
         }
 
@@ -93,7 +94,7 @@ public class CircuitDisplay extends JPanel implements ActionListener {
                     continue;
                 }
             }
-            gj.draw(g);
+            gj.draw(g, 255);
         }
         g.setColor(Color.WHITE);
         Vec pin = clipToPin(mousePosition);
@@ -146,7 +147,7 @@ public class CircuitDisplay extends JPanel implements ActionListener {
                 this.getHeight() - 100 + SELECTION_ELEMENT_DISPLACEMENT),
                 Vec.of(100 - SELECTION_ELEMENT_DISPLACEMENT,
                         this.getHeight() - SELECTION_ELEMENT_DISPLACEMENT),
-                true);
+                false, false);
 
     }
 
@@ -180,6 +181,7 @@ public class CircuitDisplay extends JPanel implements ActionListener {
 //                        initialPos = battery.positiveJunction.position;
                         junctions.add(battery.positiveJunction);
                         junctions.add(battery.negativeJunction);
+                        break;
                 }
             } else {
                 if (selected != null) {

@@ -54,11 +54,6 @@ public class GJunction {
         draw(g, position, connections.size() >= 2);
     }
 
-
-    public void draw(Graphics2D g) {
-        draw(g, 255);
-    }
-
     public static void draw(Graphics2D g, Vec position, boolean connected) {
         if (connected) {
             g.fillOval(position.x - PIN_RADIUS, position.y - PIN_RADIUS,

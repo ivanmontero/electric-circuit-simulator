@@ -8,22 +8,15 @@ import com.imontero.circuit.Wire;
 import java.awt.*;
 
 // A simple wrapper
-public abstract class GCircuitElement {
-    public final CircuitElementType TYPE;
+public interface GCircuitElement {
+    void draw(Graphics2D g, int alpha);
 
-    public GCircuitElement(CircuitElementType type) {
-        this.TYPE = type;
-    }
+    void setPosition(Vec p);
+    Vec getPosition();
 
-    public abstract void draw(Graphics2D g);
-    public abstract void draw(Graphics2D g, int alpha);
-
-    public abstract void setPosition(Vec p);
-    public abstract Vec getPosition();
-
-    public abstract boolean contains(Vec p);
-    public abstract boolean containsJunction(Vec p);
-    public abstract GJunction getJunction(Vec p);
+    boolean contains(Vec p);
+    boolean containsJunction(Vec p);
+    GJunction getJunction(Vec p);
 //    public CircuitElement circuitElement;
 //    public Circuit c;
 //

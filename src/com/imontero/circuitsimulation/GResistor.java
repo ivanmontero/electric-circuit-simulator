@@ -5,15 +5,9 @@ import com.imontero.circuit.CircuitElementType;
 import java.awt.*;
 
 // TODO: Finish
-public class GResistor extends GCircuitElement {
+public class GResistor implements GCircuitElement {
 
-    public GResistor(CircuitElementType type) {
-        super(type);
-    }
-
-    @Override
-    public void draw(Graphics2D g) {
-
+    public GResistor() {
     }
 
     @Override
